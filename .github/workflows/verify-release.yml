@@ -73,7 +73,9 @@ jobs:
               assert set(svcs) == {'appsmith'}, set(svcs)
               svc = svcs['appsmith']
               assert 'appsmith/appsmith-ce' in svc['image'], svc['image']
-              assert svc['image'].endswith(':' + tag.lstrip('v')), svc['image']
+              # the upstream tag keeps its "v" prefix while package.yml carries the
+              # plain numeric version, so compare against the tag verbatim
+              assert svc['image'].endswith(':' + tag), svc['image']
 
               env = ' '.join(str(x) for x in svc['environment'])
               # the upstream compose ships "abcd" for both; that would leave
