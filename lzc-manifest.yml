@@ -1,0 +1,58 @@
+application:
+  subdomain: appsmith
+  multi_instance: false
+  upstreams:
+    - location: /package-licenses/
+      backend: file:///lzcapp/pkg/content/licenses/
+    - location: /
+      backend: http://appsmith:80/
+
+services:
+  appsmith:
+    # upstream: appsmith/appsmith-ce:v2.6.0
+    image: docker.1ms.run/appsmith/appsmith-ce:v2.6.0
+    environment:
+      # The upstream compose ships "abcd" for both of these. They encrypt the
+      # stored datasource credentials, so a guessable value would expose every
+      # connection secret; generate them per deployment instead.
+      - |-
+        APPSMITH_ENCRYPTION_PASSWORD={{ stable_secret "appsmith_encryption_password" | replace "\r" "" | replace "\n" "" }}
+      - |-
+        APPSMITH_ENCRYPTION_SALT={{ stable_secret "appsmith_encryption_salt" | replace "\r" "" | replace "\n" "" }}
+      # APPSMITH_CUSTOM_DOMAIN is deliberately left empty (upstream default).
+      # caddy-reconfigure.mjs ignores any value carrying a protocol ("if it has
+      # a protocol, we ignore the whole value"), and a bare domain makes Caddy
+      # provision its own Let's Encrypt cert, which fights the ingress TLS.
+      # Empty means Appsmith derives the base URL from forwarded headers.
+      - APPSMITH_DISABLE_TELEMETRY=true
+      - TZ=Asia/Shanghai
+    binds:
+      # MongoDB, the PostgreSQL metadata store, uploaded files and the
+      # configuration the entrypoint writes on first boot all live here.
+      - /lzcapp/var/stacks:/appsmith-stacks
+
+usage: |
+  Appsmith 是低代码平台：拖拽表格、表单、图表组件，连上数据库或 API，就能拼出内部工具和管理后台，不用从头写前端。
+
+  使用方法：
+  1. 打开应用，第一次会进入注册页；**第一个注册的账号自动成为实例管理员**，
+     之后可以邀请同事、分配角色。没有内置账号，也不存在默认口令。
+  2. 新建一个应用，添加数据源（PostgreSQL、MySQL、REST API 等），
+     在页面上拖组件、绑查询，做完即可分享给团队使用。
+  3. 支持把应用发布成独立链接，权限按工作区/角色控制。
+
+  数据与安全：
+  - 数据库、上传文件、首次启动生成的配置都存在 /lzcapp/var/stacks，
+    卸载会一并删除，重要应用请定期在管理台里做备份。
+  - 数据源密码等敏感信息用加密密钥保护；上游示例给的密钥是 "abcd"（弱口令），
+    本包改为每个部署随机生成的稳定密钥，猜不到也复不了别家的密文。
+  - 应用经懒猫入口鉴权访问。
+
+  说明：
+  - 单容器：内置 MongoDB 与 PostgreSQL，不需要额外数据库。
+  - 首次启动要初始化数据库，打开可能要等一到两分钟，期间会显示加载页。
+  - 有意不设 APPSMITH_CUSTOM_DOMAIN：该变量带协议头会被上游整个忽略，
+    只写域名又会让内置 Caddy 去申请自己的证书、和入口 TLS 冲突；
+    留空则由 Appsmith 从请求头推导访问地址。
+  - 未做真机验证：注册首个管理员、连接数据源、发布应用以及重启后数据留存
+    均未在设备上实测。

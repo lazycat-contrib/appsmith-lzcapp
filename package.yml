@@ -1,0 +1,18 @@
+package: community.lazycat.app.appsmith
+name: Appsmith
+version: 0.0.0
+description: "Low-code platform: build internal tools and admin panels by dragging widgets and wiring queries."
+min_os_version: "1.5.0"
+homepage: https://www.appsmith.com/
+author: Appsmith
+license: Apache-2.0
+permissions:
+  required:
+    - net.internet
+locales:
+  zh:
+    name: Appsmith
+    description: "低代码平台：拖拽组件、连数据源，快速搭内部工具和管理后台。"
+  en:
+    name: Appsmith
+    description: "Low-code platform: build internal tools and admin panels by dragging widgets and wiring queries."
