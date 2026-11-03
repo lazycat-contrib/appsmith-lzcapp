@@ -1,6 +1,9 @@
 application:
   subdomain: appsmith
   multi_instance: false
+  # Appsmith has its own accounts and workspace roles.
+  public_path:
+    - /
   upstreams:
     - location: /package-licenses/
       backend: file:///lzcapp/pkg/content/licenses/
@@ -46,7 +49,8 @@ usage: |
     卸载会一并删除，重要应用请定期在管理台里做备份。
   - 数据源密码等敏感信息用加密密钥保护；上游示例给的密钥是 "abcd"（弱口令），
     本包改为每个部署随机生成的稳定密钥，猜不到也复不了别家的密文。
-  - 应用经懒猫入口鉴权访问。
+  - 应用直接对外开放，由 Appsmith 自己的登录页鉴权（未登录看不到工作区）：
+    自带账号体系的服务再套一层平台鉴权会导致重复登录，所以用 public_path。
 
   说明：
   - 单容器：内置 MongoDB 与 PostgreSQL，不需要额外数据库。

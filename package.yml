@@ -1,6 +1,6 @@
 package: community.lazycat.app.appsmith
 name: Appsmith
-version: 2.6.0
+version: 0.0.0
 description: "Low-code platform: build internal tools and admin panels by dragging widgets and wiring queries."
 min_os_version: "1.5.0"
 homepage: https://www.appsmith.com/
